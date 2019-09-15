@@ -7,13 +7,16 @@ import com.space.model.ShipType;
 import com.space.service.ShipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.StreamingHttpOutputMessage;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
 @RequestMapping("/rest")
-public class ShipController {
+public class MainController {
 
     @Autowired
     private ShipService shipService;
@@ -84,24 +87,12 @@ public class ShipController {
     @ResponseStatus(HttpStatus.OK)
     public @ResponseBody Ship updateShip(@PathVariable("id") Long id, @RequestBody Ship updatedShip) {
 
-        if (id == null || id <= 0 || updatedShip == null) {
+        if (id == null || id <= 0) {
             throw new BadRequestException();
         }
+        updatedShip.setId(id);
 
-        Ship ship = shipService.get(id);
-        if (ship == null) {
-            throw new ResourceNotFoundException();
-        }
-
-        ship.setName(updatedShip.getName() != null ? updatedShip.getName() : ship.getName());
-        ship.setUsed(updatedShip.getUsed() != null ? updatedShip.getUsed() : ship.getUsed());
-        ship.setPlanet(updatedShip.getPlanet() != null ? updatedShip.getPlanet() : ship.getPlanet());
-        ship.setShipType(updatedShip.getShipType() != null ? updatedShip.getShipType() : ship.getShipType());
-        ship.setProdDate(updatedShip.getProdDate() != null ? updatedShip.getProdDate() : ship.getProdDate());
-        ship.setSpeed(updatedShip.getSpeed() != null ? updatedShip.getSpeed() : ship.getSpeed());
-        ship.setCrewSize(updatedShip.getCrewSize() != null ? updatedShip.getCrewSize() : ship.getCrewSize());
-
-        return shipService.update(ship);
+        return shipService.update(updatedShip);
     }
 
     @RequestMapping(value = "/ships/{id}", method = RequestMethod.DELETE)

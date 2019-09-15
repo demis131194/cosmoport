@@ -1,6 +1,8 @@
 package com.space.service;
 
 import com.space.controller.ShipOrder;
+import com.space.controller.exception.BadRequestException;
+import com.space.controller.exception.ResourceNotFoundException;
 import com.space.model.Ship;
 import com.space.model.ShipType;
 import com.space.repository.ShipRepository;
@@ -14,6 +16,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 @Service
@@ -95,8 +99,34 @@ public class ShipServiceImpl implements ShipService {
 
     @Override
     public Ship update(Ship ship) {
+        Calendar calendar = null;
+        if (ship.getProdDate() != null) {
+             calendar = Calendar.getInstance();
+             calendar.setTime(ship.getProdDate());
+        }
+        if ((ship.getName() != null && (ship.getName().length() > 50 || ship.getName().isEmpty()))
+                || ship.getPlanet() != null && ship.getPlanet().length() > 50
+                || ship.getCrewSize() != null && (ship.getCrewSize()<1 || ship.getCrewSize()>9999)
+                || calendar != null && (calendar.get(Calendar.YEAR) <2800 || (calendar.get(Calendar.YEAR) > (Calendar.getInstance().get(Calendar.YEAR) + 1000)))
+        ) {
+            throw new BadRequestException();
+        }
+
+        Ship shipCheck = shipRepository.findById(ship.getId()).orElse(null);
+        if (shipCheck == null) {
+            throw new ResourceNotFoundException();
+        }
+
+        ship.setName(ship.getName() == null ? shipCheck.getName() : ship.getName());
+        ship.setUsed(ship.getUsed() == null ? shipCheck.getUsed() : ship.getUsed());
+        ship.setPlanet(ship.getPlanet() == null ? shipCheck.getPlanet() : ship.getPlanet());
+        ship.setShipType(ship.getShipType() == null ? shipCheck.getShipType() : ship.getShipType());
+        ship.setProdDate(ship.getProdDate() == null ? shipCheck.getProdDate() : ship.getProdDate());
+        ship.setSpeed(ship.getSpeed() == null ? shipCheck.getSpeed() : ship.getSpeed());
+        ship.setCrewSize(ship.getCrewSize() == null ? shipCheck.getCrewSize() : ship.getCrewSize());
         double rating = calculateRating(ship.getUsed(), ship.getProdDate(), ship.getSpeed());
         ship.setRating(rating);
+
         return shipRepository.saveAndFlush(ship);
     }
 
@@ -109,8 +139,12 @@ public class ShipServiceImpl implements ShipService {
         double k = isUsed ? 0.5 : 1;
         Calendar prodDateCal = Calendar.getInstance();
         prodDateCal.setTime(prodDate);
-        double rating = (80*speed*k) / (Calendar.getInstance().get(Calendar.YEAR) - prodDateCal.get(Calendar.YEAR) + 1);
-        return rating;
+        double number1 = 80*speed*k;
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR) + 1000;
+        int prodYear = prodDateCal.get(Calendar.YEAR);
+        int number2 =  currentYear -  prodYear + 1;
+        BigDecimal rating = new BigDecimal(number1 / number2).setScale(2, RoundingMode.HALF_UP);
+        return rating.doubleValue();
     }
 
     private Predicate[] getFilters(CriteriaBuilder cb, Root<Ship> root,
