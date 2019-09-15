@@ -1,11 +1,11 @@
 package com.space.service;
 
 import com.space.controller.ShipOrder;
-import com.space.controller.exception.BadRequestException;
 import com.space.controller.exception.ResourceNotFoundException;
 import com.space.model.Ship;
 import com.space.model.ShipType;
 import com.space.repository.ShipRepository;
+import com.space.service.validator.ShipValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -85,6 +85,7 @@ public class ShipServiceImpl implements ShipService {
 
     @Override
     public Ship add(Ship ship) {
+        ShipValidator.validateForCreate(ship);
         double rating = calculateRating(ship.getUsed(), ship.getProdDate(), ship.getSpeed());
         ship.setRating(rating);
 
@@ -99,18 +100,8 @@ public class ShipServiceImpl implements ShipService {
 
     @Override
     public Ship update(Ship ship) {
-        Calendar calendar = null;
-        if (ship.getProdDate() != null) {
-             calendar = Calendar.getInstance();
-             calendar.setTime(ship.getProdDate());
-        }
-        if ((ship.getName() != null && (ship.getName().length() > 50 || ship.getName().isEmpty()))
-                || ship.getPlanet() != null && ship.getPlanet().length() > 50
-                || ship.getCrewSize() != null && (ship.getCrewSize()<1 || ship.getCrewSize()>9999)
-                || calendar != null && (calendar.get(Calendar.YEAR) <2800 || (calendar.get(Calendar.YEAR) > (Calendar.getInstance().get(Calendar.YEAR) + 1000)))
-        ) {
-            throw new BadRequestException();
-        }
+
+        ShipValidator.validateForUpdate(ship);
 
         Ship shipCheck = shipRepository.findById(ship.getId()).orElse(null);
         if (shipCheck == null) {
