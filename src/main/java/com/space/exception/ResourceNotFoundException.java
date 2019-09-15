@@ -1,4 +1,4 @@
-package com.space.controller.exception;
+package com.space.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

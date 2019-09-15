@@ -1,6 +1,6 @@
 package com.space.service.validator;
 
-import com.space.controller.exception.BadRequestException;
+import com.space.exception.BadRequestException;
 import com.space.model.Ship;
 
 import java.util.Calendar;

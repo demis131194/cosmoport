@@ -1,17 +1,14 @@
 package com.space.controller;
 
-import com.space.controller.exception.BadRequestException;
-import com.space.controller.exception.ResourceNotFoundException;
+import com.space.exception.BadRequestException;
+import com.space.exception.ResourceNotFoundException;
 import com.space.model.Ship;
 import com.space.model.ShipType;
 import com.space.service.ShipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.StreamingHttpOutputMessage;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController

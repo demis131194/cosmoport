@@ -1,7 +1,7 @@
 package com.space.service;
 
 import com.space.controller.ShipOrder;
-import com.space.controller.exception.ResourceNotFoundException;
+import com.space.exception.ResourceNotFoundException;
 import com.space.model.Ship;
 import com.space.model.ShipType;
 import com.space.repository.ShipRepository;
